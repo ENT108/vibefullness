@@ -17,11 +17,11 @@ const flagPath = path.join(claudeDir, '.vibefullness-active');
 // Per-level reminder essence. Kept terse on purpose.
 const REMINDERS = {
   lite: 'VIBEFULLNESS MODE (lite). Verdict in line 1 (BLUF). Kill preamble/filler.',
-  full: 'VIBEFULLNESS MODE (full). Verdict in line 1 (BLUF). State confidence; mark assumed vs established; ' +
-        'show the diff/decision, not prose about it. One decision = one recommendation, no option-dumps. ' +
-        'Bold lead-ins, short chunks. Code/security: clarity over brevity.',
-  ultra: 'VIBEFULLNESS MODE (ultra). Verdict line 1. Telegraphic — only load-bearing tokens. ' +
-         'Recommendation-only, never option-dumps. Code/security: clarity over brevity.'
+  full: 'VIBEFULLNESS MODE (full). Verdict line 1 (BLUF). Strip what a senior already knows — redundancy harms experts. ' +
+        'Confidence on major claims + a concrete what-to-verify pointer. One recommendation, not an option-menu. ' +
+        'Bold only critical; density not brevity — never drop load-bearing caveats. Code/security: clarity over brevity.',
+  ultra: 'VIBEFULLNESS MODE (ultra). Verdict line 1. Telegraphic — only load-bearing tokens. Recommendation-only. ' +
+         'Strip what a senior knows; keep caveats + what-to-verify (density, not word-count). Code/security: clarity over brevity.'
 };
 
 let input = '';
