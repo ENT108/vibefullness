@@ -1,71 +1,70 @@
-# vibefullness — low-cognitive-load output mode for Claude Code
+# vibefullness
 
-An always-on **communication discipline** for Claude Code that shapes every response to cost the operator the least cognitive power to read and to trust.
+**Always-on output discipline for Claude Code that makes every response cheap to read and cheap to verify.** Install: `./install.sh`, restart, done. Toggle `/vibe full|ultra|off`.
 
-It exists because sustained, intense AI-driven work has a real cost the tooling rarely addresses: **verification/review fatigue** — the constant load of reading dense output and judging whether to trust it, response after response, for weeks. That load is the documented #1 drain in long agent sessions. `vibefullness` attacks it at the source: it makes the model's output *cheap to read* and *cheap to verify*.
+Cuts verification/review fatigue — the load of reading dense AI output and judging whether to trust it, turn after turn, that accumulates across long sessions. Not brevity (that's word-choice); **information economy** — what goes where, what to omit, how to make a claim verifiable at a glance.
 
-> Not brevity. That's word choice (see [caveman mode](https://github.com/), which this composes with). `vibefullness` is **information economy** — what goes where, what to omit, and how to make a claim verifiable at a glance.
+## The contract (every response, in this order)
 
-## The contract
-
-Every response is shaped to this order (parts omitted when they don't apply):
-
-1. **Verdict first (BLUF).** Answer/recommendation in line 1. Never buried under setup or "it depends." If it genuinely depends, line 1 names the default pick + the one variable that flips it.
-2. **Support, only if it earns its place.** No restating the question, no narrating intent.
-3. **Make it verifiable.** State confidence, mark assumed vs established, show the diff/decision — not prose about it.
-4. **One decision, surfaced clean.** A recommendation, not a balanced option-dump to weigh.
+1. **Verdict first (BLUF).** Answer in line 1 — never buried under setup or "it depends." If it depends, line 1 gives the default + the one variable that flips it.
+2. **Support only if it earns its place.** No restating the question, no narrating intent. Explanation goes to the *few* non-obvious points, not what a senior already knows (redundancy harms experts).
+3. **Route the scrutiny.** Confidence on major claims + a concrete *what-to-verify* pointer — counters automation bias. Show the diff/decision, not prose about it.
+4. **One decision, clean.** A recommendation (+1–2 characterized alternatives), never an option-menu to weigh.
 
 ## Levels
 
-| level | what it applies |
+| level | applies |
 |---|---|
-| `lite` | Verdict first + kill filler/preamble. Nothing else. |
-| `full` | lite + verifiability (confidence, assumed-vs-established, show-the-thing) + one-decision-with-a-recommendation + scan structure. **Default.** |
-| `ultra` | full + aggressive minimalism: telegraphic, only load-bearing tokens, recommendation-only. |
+| `lite` | Verdict first + kill filler. Nothing else. |
+| `full` | lite + routed verifiability + recommendation + expertise-stripping + scannable structure. **Default.** |
+| `ultra` | full + telegraphic, recommendation-only. Hard guard: never drops a load-bearing caveat to be short. |
 
 ## Install
 
 ```bash
-./install.sh
+./install.sh    # copies hooks + skill to ~/.claude, wires settings.json (backed up), idempotent
 ```
 
-Copies the hooks + skill into `~/.claude/`, then wires two hooks into `~/.claude/settings.json` (backup made first). Idempotent — safe to re-run. Takes effect next Claude Code session.
-
-Default level via `VIBEFULLNESS_DEFAULT_MODE` env → `~/.config/vibefullness/config.json` (`{"defaultMode":"full"}`) → `full`.
+Takes effect next session. Default level: `VIBEFULLNESS_DEFAULT_MODE` env → `~/.config/vibefullness/config.json` → `full`.
 
 ## Usage
 
 ```
-/vibefullness lite     # gentlest — BLUF + no filler
-/vibefullness full     # full discipline (default)
-/vibefullness ultra    # telegraphic
-/vibefullness off      # disable for the session
+/vibefullness lite|full|ultra|off      # /vibe is an alias: /vibe ultra
 ```
 
-`/vibe` is a short alias for `/vibefullness` (e.g. `/vibe ultra`). Natural language works too: "stop vibefullness", "normal mode".
+Natural language also works: "stop vibefullness", "normal mode".
 
 ## How it works
 
-Mirrors the caveman-mode architecture:
+Mirrors caveman-mode architecture.
 
 | file | role |
 |---|---|
-| `skills/vibefullness/SKILL.md` | single source of truth — the ruleset |
+| `skills/vibefullness/SKILL.md` | single source of truth — the ruleset (edit this to change behavior) |
 | `hooks/vibefullness-config.js` | mode resolution + symlink-safe, size-capped flag I/O |
 | `hooks/vibefullness-activate.js` | SessionStart — writes flag, emits ruleset filtered to active level |
-| `hooks/vibefullness-tracker.js` | UserPromptSubmit — parses toggles, emits compact per-turn reminder |
+| `hooks/vibefullness-tracker.js` | UserPromptSubmit — parses toggles, emits ≤3-line per-turn reminder |
 
-The flag file (`~/.claude/.vibefullness-active`) holds the active level. Reads are whitelist-validated and refuse symlinks, so a swapped flag can never inject untrusted bytes into terminal output or model context.
+Flag file `~/.claude/.vibefullness-active` holds the level. Reads are whitelist-validated and refuse symlinks — a swapped flag can't inject bytes into terminal output or model context.
 
-Edit `SKILL.md` to change behavior — `vibefullness-activate.js` reads it at runtime, no duplication to drift.
+**Composition with caveman:** distinct jobs, run together. caveman = word choice; vibefullness = information structure + verifiability. Both on → vibefullness sets the shape, caveman trims the words inside it.
 
-## Composition with caveman
+## Evidence
 
-Distinct jobs, run together. **caveman** = word choice (drop articles/filler/pleasantries). **vibefullness** = information structure + verifiability. Both on: vibefullness sets the shape, caveman trims the words inside it.
+Rules are grounded, not invented (confidence: rules well-supported; magnitudes vary):
 
-## Why "vibefullness"
+- **Cognitive Load Theory + signaling** — Sweller; Cambridge Handbook.
+- **Expertise-reversal** — explanation that helps novices measurably *degrades* experts (Kalyuga et al.). This is why scaffolding is stripped.
+- **Split-attention → code adjacency** — Tarmizi-Sweller.
+- **BLUF / inverted-pyramid / serial-position / F-pattern** — Nielsen Norman + comms practice (applied evidence, thin lab RCTs — verify before citing as proof).
+- **Choice overload** under complex/high-stakes conditions — Iyengar-Lepper.
+- **Trust calibration / automation bias** — conditional on consistent, calibrated confidence display.
+- **Not used:** ego-depletion (failed replication). Long sessions are taxing without a willpower-tank model.
 
-Vibe coding intensely for months can quietly burn out the operator — loss of focus, loss of creative drive. The research on it (cognitive offloading, verification fatigue, the perception-vs-reality gap) is thin but directionally clear. This is one small, concrete countermeasure: spend less of the operator's finite attention on every exchange. Mindful vibe coding. Vibefullness.
+## Why the name
+
+Mindful vibe coding. Vibe coding hard for months quietly drains focus and creative drive; spending less of the operator's finite attention per exchange is one concrete countermeasure.
 
 ## License
 
