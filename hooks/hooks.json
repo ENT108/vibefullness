@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/vibefullness-activate.js\"",
+            "timeout": 10,
+            "statusMessage": "Loading vibefullness mode..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/vibefullness-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking vibefullness mode..."
+          }
+        ]
+      }
+    ]
+  }
+}

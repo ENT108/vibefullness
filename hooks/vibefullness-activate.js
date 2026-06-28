@@ -16,7 +16,9 @@ const { getDefaultMode, safeWriteFlag } = require('./vibefullness-config');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const flagPath = path.join(claudeDir, '.vibefullness-active');
-const skillPath = path.join(claudeDir, 'skills', 'vibefullness', 'SKILL.md');
+// Resolve SKILL.md relative to this script so it works both as a plugin
+// (${CLAUDE_PLUGIN_ROOT}/hooks + /skills) and a manual install (~/.claude/hooks + /skills).
+const skillPath = path.join(__dirname, '..', 'skills', 'vibefullness', 'SKILL.md');
 
 const mode = getDefaultMode();
 

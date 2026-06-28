@@ -1,0 +1,11 @@
+{
+  "name": "vibefullness",
+  "owner": { "name": "ENT108" },
+  "plugins": [
+    {
+      "name": "vibefullness",
+      "source": "./",
+      "description": "Low-cognitive-load output discipline for Claude Code — cheap to read, cheap to verify."
+    }
+  ]
+}

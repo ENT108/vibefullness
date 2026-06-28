@@ -1,0 +1,7 @@
+{
+  "name": "vibefullness",
+  "description": "Always-on output discipline: every response cheap to read and cheap to verify. Composes with caveman.",
+  "license": "MIT",
+  "repository": "https://github.com/ENT108/vibefullness",
+  "keywords": ["communication", "cognitive-load", "style", "skill", "hooks"]
+}
