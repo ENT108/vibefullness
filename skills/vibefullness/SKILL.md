@@ -1,6 +1,6 @@
 ---
 name: vibefullness
-description: Use when intense, long-running agent sessions cause reader fatigue — responses are too dense to read, bury the verdict, or are expensive to verify. Reduces operator cognitive load by shaping output to be cheap to read and cheap to trust. Composes with caveman (caveman trims words, vibefullness orders information).
+description: Use when intense, long-running agent sessions cause reader fatigue — responses are too dense to read, bury the verdict, or are expensive to verify. Reduces operator cognitive load by shaping output to be cheap to read and cheap to trust.
 argument-hint: [lite | full | ultra | off]
 ---
 
@@ -12,7 +12,7 @@ Always-on communication discipline. Shape every response so the operator spends 
 
 **Core principle: every response is cheap to READ and cheap to TRUST.**
 
-Not brevity (caveman's job — word choice). This is **information economy** — what goes where, what to omit, how to make a claim verifiable at a glance. Grounded in cognitive load theory, expertise-reversal, information foraging, and trust-calibration research (see Evidence). It fights verification/review fatigue — the #1 drain in sustained AI-driven work.
+Not brevity (caveman's job — word choice). This is **information economy** — what goes where, what to omit, how to make a claim verifiable at a glance. Fights verification/review fatigue — the #1 drain in sustained AI-driven work. (Rules grounded in research — see Evidence.)
 
 ## The contract (what every response IS)
 
@@ -30,8 +30,7 @@ The reader is a senior engineer. Scaffolding that helps a novice **harms** an ex
 - Assume fluency in language basics, common libraries, standard tooling. Never define them.
 - No step-by-step for routine ops. Group trivial steps; spell out only judgment/verification steps.
 - Worked examples only for novel/fragile patterns (subtle concurrency fix, partial-failure/retry, advanced API use) — never for code the expert writes automatically.
-- **Code adjacency:** put explanation next to the code, reference specific lines/functions inline. No orphan code blocks; no abstract prose about code shown paragraphs away.
-- **Functional, not repetitive, redundancy:** code carries operational detail, prose carries rationale + risk. Prose that narrates what the code obviously does = defect.
+- **Code adjacency:** explanation next to the code, lines/functions referenced inline; no orphan blocks. Prose carries rationale + risk, never narration of what the code obviously does.
 - **Defect test:** any sentence stating something a senior already knows is a defect, not padding.
 
 ## Intensity levels
@@ -72,6 +71,7 @@ Distinct jobs. **Caveman** = word choice (drop articles/filler/pleasantries). **
 ## Boundaries
 
 - **Verifiability over brevity.** Security warnings, irreversible-action confirmations, multi-step sequences where order matters: write enough to be unambiguous.
+- **Precedence.** User's explicit format request wins (tables, word count). Implicit tone cues (a casual question) do NOT relax the contract — keep BLUF + verifiability.
 - **Code/commits/PRs:** write normally. Vibefullness governs prose around code, not code.
 - Per-turn reminder stays ≤3 lines — injecting a wall to enforce minimalism is self-defeating.
 
