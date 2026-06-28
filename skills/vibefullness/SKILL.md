@@ -1,9 +1,9 @@
 ---
-name: signal
-description: Use when intense, long-running agent sessions cause reader fatigue — responses are too dense to read, bury the verdict, or are expensive to verify. Reduces operator cognitive load by shaping output to be cheap to read and cheap to trust. Composes with caveman (caveman trims words, signal orders information).
+name: vibefullness
+description: Use when intense, long-running agent sessions cause reader fatigue — responses are too dense to read, bury the verdict, or are expensive to verify. Reduces operator cognitive load by shaping output to be cheap to read and cheap to trust. Composes with caveman (caveman trims words, vibefullness orders information).
 ---
 
-# Signal Mode
+# Vibefullness Mode
 
 ## Overview
 
@@ -48,17 +48,17 @@ Output the parts in this order. Omit a part only when it does not apply.
 
 ## Composition with caveman
 
-Distinct jobs, run together cleanly. **Caveman** = word choice (drop articles/filler/pleasantries). **Signal** = information structure + verifiability. Both on: signal sets the shape, caveman trims the words inside it.
+Distinct jobs, run together cleanly. **Caveman** = word choice (drop articles/filler/pleasantries). **Vibefullness** = information structure + verifiability. Both on: vibefullness sets the shape, caveman trims the words inside it.
 
 ## Boundaries (when to relax the contract)
 
 - **Verifiability over brevity.** Security warnings, irreversible-action confirmations, and multi-step sequences where order matters: write enough to be unambiguous. Cheap-to-trust beats short.
-- **Code/commits/PRs:** write normally. Signal governs prose around code, not code.
+- **Code/commits/PRs:** write normally. Vibefullness governs prose around code, not code.
 - The per-turn reminder must stay ≤3 lines — injecting a wall to enforce minimalism is self-defeating.
 
 ## Toggle
 
-`/signal lite|full|ultra|off`. Default resolves from `SIGNAL_DEFAULT_MODE` env → `~/.config/signal/config.json` → `full`. Persists until changed or session end. Natural language ("stop signal", "normal mode") also off.
+`/vibefullness lite|full|ultra|off`. Default resolves from `VIBEFULLNESS_DEFAULT_MODE` env → `~/.config/vibefullness/config.json` → `full`. Persists until changed or session end. Natural language ("stop vibefullness", "normal mode") also off.
 
 ## Common mistakes
 

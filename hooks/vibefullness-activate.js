@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// signal — Claude Code SessionStart activation hook.
+// vibefullness — Claude Code SessionStart activation hook.
 //
 // On every session start:
-//   1. Writes flag file at $CLAUDE_CONFIG_DIR/.signal-active (statusline/tracker read it)
-//   2. Emits the signal ruleset (from SKILL.md, filtered to the active level) as
+//   1. Writes flag file at $CLAUDE_CONFIG_DIR/.vibefullness-active (statusline/tracker read it)
+//   2. Emits the vibefullness ruleset (from SKILL.md, filtered to the active level) as
 //      hidden SessionStart context.
 //
 // SKILL.md is the single source of truth — edits to it propagate automatically,
@@ -12,11 +12,11 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { getDefaultMode, safeWriteFlag } = require('./signal-config');
+const { getDefaultMode, safeWriteFlag } = require('./vibefullness-config');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
-const flagPath = path.join(claudeDir, '.signal-active');
-const skillPath = path.join(claudeDir, 'skills', 'signal', 'SKILL.md');
+const flagPath = path.join(claudeDir, '.vibefullness-active');
+const skillPath = path.join(claudeDir, 'skills', 'vibefullness', 'SKILL.md');
 
 const mode = getDefaultMode();
 
@@ -64,18 +64,18 @@ if (skillContent) {
     return acc;
   }, []);
 
-  output = 'SIGNAL MODE ACTIVE — level: ' + mode + '\n\n' + filtered.join('\n');
+  output = 'VIBEFULLNESS MODE ACTIVE — level: ' + mode + '\n\n' + filtered.join('\n');
 } else {
   // Minimal fallback if SKILL.md is missing.
   output =
-    'SIGNAL MODE ACTIVE — level: ' + mode + '\n\n' +
+    'VIBEFULLNESS MODE ACTIVE — level: ' + mode + '\n\n' +
     'Shape output for least reader cognitive load. Verdict/recommendation in line 1 (BLUF). ' +
     'Support only if it earns its place — no restating the question, no narrating intent. ' +
     'Make claims verifiable: state confidence, mark assumed vs established, show the diff/decision not prose about it. ' +
     'When the user must choose, give a recommendation — not an option-dump. ' +
     'Bold lead-ins, short chunks, no over-formatting.\n\n' +
     'Persist every response. Code/commits/security: write normally (clarity over brevity). ' +
-    'Switch: /signal lite|full|ultra|off.';
+    'Switch: /vibefullness lite|full|ultra|off.';
 }
 
 process.stdout.write(output);

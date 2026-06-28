@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// signal — UserPromptSubmit hook.
-//   1. Parses /signal commands + natural-language toggles, updates the flag.
-//   2. Emits a compact per-turn reminder when signal is active (keeps the
+// vibefullness — UserPromptSubmit hook.
+//   1. Parses /vibefullness commands + natural-language toggles, updates the flag.
+//   2. Emits a compact per-turn reminder when vibefullness is active (keeps the
 //      discipline in the model's attention as other plugins inject competing
 //      style instructions). Reminder is intentionally <=3 lines — injecting a
 //      wall to enforce minimalism would be self-defeating.
@@ -9,18 +9,18 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { getDefaultMode, safeWriteFlag, readFlag } = require('./signal-config');
+const { getDefaultMode, safeWriteFlag, readFlag } = require('./vibefullness-config');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
-const flagPath = path.join(claudeDir, '.signal-active');
+const flagPath = path.join(claudeDir, '.vibefullness-active');
 
 // Per-level reminder essence. Kept terse on purpose.
 const REMINDERS = {
-  lite: 'SIGNAL MODE (lite). Verdict in line 1 (BLUF). Kill preamble/filler.',
-  full: 'SIGNAL MODE (full). Verdict in line 1 (BLUF). State confidence; mark assumed vs established; ' +
+  lite: 'VIBEFULLNESS MODE (lite). Verdict in line 1 (BLUF). Kill preamble/filler.',
+  full: 'VIBEFULLNESS MODE (full). Verdict in line 1 (BLUF). State confidence; mark assumed vs established; ' +
         'show the diff/decision, not prose about it. One decision = one recommendation, no option-dumps. ' +
         'Bold lead-ins, short chunks. Code/security: clarity over brevity.',
-  ultra: 'SIGNAL MODE (ultra). Verdict line 1. Telegraphic — only load-bearing tokens. ' +
+  ultra: 'VIBEFULLNESS MODE (ultra). Verdict line 1. Telegraphic — only load-bearing tokens. ' +
          'Recommendation-only, never option-dumps. Code/security: clarity over brevity.'
 };
 
@@ -32,16 +32,17 @@ process.stdin.on('end', () => {
     const prompt = (data.prompt || '').trim().toLowerCase();
 
     // Natural-language activation
-    if (/\b(activate|enable|turn on|start)\b.*\bsignal\b/i.test(prompt) ||
-        /\bsignal\b.*\b(mode|activate|enable|turn on|start)\b/i.test(prompt)) {
+    if (/\b(activate|enable|turn on|start)\b.*\bvibefullness\b/i.test(prompt) ||
+        /\bvibefullness\b.*\b(mode|activate|enable|turn on|start)\b/i.test(prompt)) {
       if (!/\b(stop|disable|turn off|deactivate)\b/i.test(prompt)) {
         const m = getDefaultMode();
         if (m !== 'off') safeWriteFlag(flagPath, m);
       }
     }
 
-    // /signal [lite|full|ultra|off]
-    if (prompt.startsWith('/signal')) {
+    // /vibefullness [lite|full|ultra|off]  (/vibe is a short alias)
+    const cmd = prompt.split(/\s+/)[0];
+    if (cmd === '/vibefullness' || cmd === '/vibe') {
       const arg = prompt.split(/\s+/)[1] || '';
       let mode = null;
       if (arg === 'lite' || arg === 'full' || arg === 'ultra') mode = arg;
@@ -53,8 +54,8 @@ process.stdin.on('end', () => {
     }
 
     // Deactivation — natural language
-    if (/\b(stop|disable|deactivate|turn off)\b.*\bsignal\b/i.test(prompt) ||
-        /\bsignal\b.*\b(stop|disable|deactivate|turn off)\b/i.test(prompt) ||
+    if (/\b(stop|disable|deactivate|turn off)\b.*\bvibefullness\b/i.test(prompt) ||
+        /\bvibefullness\b.*\b(stop|disable|deactivate|turn off)\b/i.test(prompt) ||
         /\bnormal mode\b/i.test(prompt)) {
       try { fs.unlinkSync(flagPath); } catch (e) {}
     }

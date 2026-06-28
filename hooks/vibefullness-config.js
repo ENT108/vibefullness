@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-// signal — shared configuration resolver + symlink-safe flag I/O.
+// vibefullness — shared configuration resolver + symlink-safe flag I/O.
 //
-// Deliberately standalone (does not require caveman-config) so signal works
+// Deliberately standalone (does not require caveman-config) so vibefullness works
 // whether or not caveman is installed. The safe flag I/O is duplicated on
 // purpose: it is a security primitive that must not depend on a sibling tool.
 //
 // Default mode resolution order:
-//   1. SIGNAL_DEFAULT_MODE environment variable
+//   1. VIBEFULLNESS_DEFAULT_MODE environment variable
 //   2. config.json `defaultMode` field:
-//      - $XDG_CONFIG_HOME/signal/config.json (if XDG set)
-//      - ~/.config/signal/config.json (macOS / Linux)
-//      - %APPDATA%\signal\config.json (Windows)
+//      - $XDG_CONFIG_HOME/vibefullness/config.json (if XDG set)
+//      - ~/.config/vibefullness/config.json (macOS / Linux)
+//      - %APPDATA%\vibefullness\config.json (Windows)
 //   3. 'full'
 
 const fs = require('fs');
@@ -21,15 +21,15 @@ const VALID_MODES = ['off', 'lite', 'full', 'ultra'];
 
 function getConfigDir() {
   if (process.env.XDG_CONFIG_HOME) {
-    return path.join(process.env.XDG_CONFIG_HOME, 'signal');
+    return path.join(process.env.XDG_CONFIG_HOME, 'vibefullness');
   }
   if (process.platform === 'win32') {
     return path.join(
       process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming'),
-      'signal'
+      'vibefullness'
     );
   }
-  return path.join(os.homedir(), '.config', 'signal');
+  return path.join(os.homedir(), '.config', 'vibefullness');
 }
 
 function getConfigPath() {
@@ -37,7 +37,7 @@ function getConfigPath() {
 }
 
 function getDefaultMode() {
-  const envMode = process.env.SIGNAL_DEFAULT_MODE;
+  const envMode = process.env.VIBEFULLNESS_DEFAULT_MODE;
   if (envMode && VALID_MODES.includes(envMode.toLowerCase())) {
     return envMode.toLowerCase();
   }
@@ -54,7 +54,7 @@ function getDefaultMode() {
 
 // Symlink-safe, atomic flag write with 0600 perms. Refuses symlinks at the
 // target and at the immediate parent dir, uses O_NOFOLLOW where available.
-// Protects the predictable flag path (~/.claude/.signal-active) from a local
+// Protects the predictable flag path (~/.claude/.vibefullness-active) from a local
 // attacker swapping it for a symlink to clobber other files. Silent best-effort.
 function safeWriteFlag(flagPath, content) {
   try {
@@ -72,7 +72,7 @@ function safeWriteFlag(flagPath, content) {
       if (e.code !== 'ENOENT') return;
     }
 
-    const tempPath = path.join(flagDir, `.signal-active.${process.pid}.${Date.now()}`);
+    const tempPath = path.join(flagDir, `.vibefullness-active.${process.pid}.${Date.now()}`);
     const O_NOFOLLOW = typeof fs.constants.O_NOFOLLOW === 'number' ? fs.constants.O_NOFOLLOW : 0;
     const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | O_NOFOLLOW;
     let fd;
