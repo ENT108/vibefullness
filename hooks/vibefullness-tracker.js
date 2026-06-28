@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { getDefaultMode, safeWriteFlag, readFlag } = require('./vibefullness-config');
+const { auditResponse, lastAssistantProse } = require('./vibefullness-audit');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const flagPath = path.join(claudeDir, '.vibefullness-active');
@@ -64,10 +65,27 @@ process.stdin.on('end', () => {
     // returns null on any anomaly, so nothing untrusted is injected.
     const active = readFlag(flagPath);
     if (active && REMINDERS[active]) {
+      // Closed loop: audit the PREVIOUS assistant prose for drift and, when
+      // detected, prepend a sharp one-line callout. Degrades silently to the
+      // plain reminder on any error — never blocks the turn, never injects
+      // transcript text (only the fixed callout strings reach the model).
+      let additionalContext = REMINDERS[active];
+      try {
+        const prose = lastAssistantProse(data.transcript_path);
+        if (prose !== null) {
+          const { callouts } = auditResponse(prose, active);
+          if (callouts.length) {
+            additionalContext = '⚠ vibefullness drift — ' + callouts.join('; ') + '\n' + REMINDERS[active];
+          }
+        }
+      } catch (e) {
+        // audit is best-effort — fall back to the plain reminder
+      }
+
       process.stdout.write(JSON.stringify({
         hookSpecificOutput: {
           hookEventName: 'UserPromptSubmit',
-          additionalContext: REMINDERS[active]
+          additionalContext
         }
       }));
     }
