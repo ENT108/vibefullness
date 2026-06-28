@@ -22,10 +22,19 @@ Cuts verification/review fatigue — the load of reading dense AI output and jud
 ## Install
 
 ```bash
-./install.sh    # copies hooks + skill to ~/.claude, wires settings.json (backed up), idempotent
+claude plugin marketplace add ENT108/vibefullness
+claude plugin install vibefullness@vibefullness
 ```
 
-Takes effect next session. Default level: `VIBEFULLNESS_DEFAULT_MODE` env → `~/.config/vibefullness/config.json` → `full`.
+Takes effect next session (or `/reload-plugins` now). **Update across machines:**
+
+```bash
+claude plugin marketplace update vibefullness && claude plugin update vibefullness
+```
+
+No `version` in `plugin.json` → every push is a new version (auto-update on pull). Default level: `VIBEFULLNESS_DEFAULT_MODE` env → `~/.config/vibefullness/config.json` → `full`.
+
+> **Legacy manual install:** `./install.sh` copies files into `~/.claude` and hand-wires `settings.json`. Use only without the plugin system — running it **alongside** the installed plugin double-fires the hooks. Pick one.
 
 ## Usage
 
