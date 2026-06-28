@@ -59,6 +59,21 @@ Flag file `~/.claude/.vibefullness-active` holds the level. Reads are whitelist-
 
 **Composition with caveman:** distinct jobs, run together. caveman = word choice; vibefullness = information structure + verifiability. Both on → vibefullness sets the shape, caveman trims the words inside it.
 
+## Statusline badge (optional)
+
+Claude Code has no plugin statusline API — the statusline is a single user-owned command — so the badge must live in **your** statusline script. It only reads `~/.claude/.vibefullness-active` (stable path), so it needs no plugin files.
+
+Copy `statusline-segment.sh` to a stable path and call it from your aggregator:
+```sh
+cp statusline-segment.sh ~/.claude/vibefullness-statusline.sh
+```
+```sh
+# inside your statusLine command script:
+vibe_text=$(sh "$HOME/.claude/vibefullness-statusline.sh")
+printf '%s ... %s' "$your_existing_line" "$vibe_text"
+```
+Renders `[VIBE]` / `[VIBE:ULTRA]` / `[VIBE:LITE]`; nothing when off. Or inline the ~10-line block from `statusline-segment.sh` directly.
+
 ## Evidence
 
 Rules are grounded, not invented (confidence: rules well-supported; magnitudes vary):
