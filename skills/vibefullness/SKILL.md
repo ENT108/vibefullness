@@ -1,6 +1,7 @@
 ---
 name: vibefullness
 description: Use when intense, long-running agent sessions cause reader fatigue — responses are too dense to read, bury the verdict, or are expensive to verify. Reduces operator cognitive load by shaping output to be cheap to read and cheap to trust. Composes with caveman (caveman trims words, vibefullness orders information).
+argument-hint: [lite | full | ultra | off]
 ---
 
 # Vibefullness Mode
