@@ -44,6 +44,24 @@ test('bluf: markdown ornament on line 1 is stripped before judging', () => {
   assert.equal(r.pass, true);
 });
 
+test('bluf: nested ornaments + list number fully stripped (verdict still found)', () => {
+  const r = check('bluf', '**1. Postgres. High confidence.** SQL owns aggregations; JSONB covers Mongo\'s niche.', PG_EXPECT);
+  assert.equal(r.pass, true);
+  assert.equal(r.score, 1);
+});
+
+test('bluf: hedge behind a leading list number still fails', () => {
+  const r = check('bluf', '**1. It depends on Postgres or Mongo**', PG_EXPECT);
+  assert.equal(r.pass, false);
+  assert.equal(r.score, 0);
+});
+
+test('bluf: explicit "X over Y" preference passes despite naming both', () => {
+  const r = check('bluf', 'I recommend Postgres over Mongo for this backend.', PG_EXPECT);
+  assert.equal(r.pass, true);
+  assert.equal(r.score, 1);
+});
+
 // --- verify: confidence tag AND what-to-verify pointer ---
 
 test('verify: tag + pointer passes', () => {
