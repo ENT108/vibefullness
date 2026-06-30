@@ -56,4 +56,4 @@ json.dump(d, open(settings, "w"), indent=2)
 PY
 
 python3 -c "import json; json.load(open('$SETTINGS')); print('  settings.json valid')"
-echo "Done. Takes effect next Claude Code session. Toggle: /vibefullness lite|full|ultra|off"
+echo "Done. Takes effect next Claude Code session. Toggle: /vibefullness on|off"

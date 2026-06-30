@@ -9,20 +9,16 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { getDefaultMode, safeWriteFlag, readFlag } = require('./vibefullness-config');
+const { getDefaultMode, normalizeMode, safeWriteFlag, readFlag } = require('./vibefullness-config');
 const { auditResponse, lastAssistantProse } = require('./vibefullness-audit');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const flagPath = path.join(claudeDir, '.vibefullness-active');
 
-// Per-level reminder essence. Kept terse on purpose.
+// Single active mode: 'on' = maximum cognitive-saving discipline. Kept terse.
 const REMINDERS = {
-  lite: 'VIBEFULLNESS MODE (lite). Verdict in line 1 (BLUF). Kill preamble/filler.',
-  full: 'VIBEFULLNESS MODE (full). Verdict line 1 (BLUF). Strip what a senior already knows — redundancy harms experts. ' +
-        'Confidence on major claims + a concrete what-to-verify pointer. One recommendation, not an option-menu. ' +
-        'Bold only critical; density not brevity — never drop load-bearing caveats. Code/security: clarity over brevity.',
-  ultra: 'VIBEFULLNESS MODE (ultra). Verdict line 1. Telegraphic — only load-bearing tokens. Recommendation-only. ' +
-         'Strip what a senior knows; keep caveats + what-to-verify (density, not word-count). Code/security: clarity over brevity.'
+  on: 'VIBEFULLNESS MODE (on). Verdict line 1. Telegraphic — only load-bearing tokens. Recommendation-only. ' +
+      'Strip what a senior knows; keep caveats + what-to-verify (density, not word-count). Code/security: clarity over brevity.'
 };
 
 let input = '';
@@ -41,17 +37,15 @@ process.stdin.on('end', () => {
       }
     }
 
-    // /vibefullness [lite|full|ultra|off]  (/vibe is a short alias)
+    // /vibefullness [on|off]  (/vibe is a short alias; legacy level names map to on)
     const cmd = prompt.split(/\s+/)[0];
     if (cmd === '/vibefullness' || cmd === '/vibe') {
       const arg = prompt.split(/\s+/)[1] || '';
-      let mode = null;
-      if (arg === 'lite' || arg === 'full' || arg === 'ultra') mode = arg;
-      else if (arg === 'off') mode = 'off';
-      else mode = getDefaultMode();
+      // normalizeMode handles on|off + legacy lite|full|ultra→on; bare command → default
+      const mode = normalizeMode(arg) || getDefaultMode();
 
-      if (mode && mode !== 'off') safeWriteFlag(flagPath, mode);
-      else if (mode === 'off') { try { fs.unlinkSync(flagPath); } catch (e) {} }
+      if (mode !== 'off') safeWriteFlag(flagPath, mode);
+      else { try { fs.unlinkSync(flagPath); } catch (e) {} }
     }
 
     // Deactivation — natural language

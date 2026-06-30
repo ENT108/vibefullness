@@ -46,8 +46,8 @@ function auditResponse(proseText, level) {
     callouts.push('lead with the verdict, not preamble');
   }
 
-  // 2. Missing confidence on a long answer — full/ultra only.
-  if ((level === 'full' || level === 'ultra') &&
+  // 2. Missing confidence on a long answer — active ('on') only.
+  if (level === 'on' &&
       sansCode.length > 600 && !CONFIDENCE_RE.test(sansCode)) {
     callouts.push('long reply, no confidence tag — tag major claims + a what-to-verify pointer');
   }

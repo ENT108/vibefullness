@@ -266,17 +266,17 @@ test('auditResponse: undefined input -> { callouts: [] }, no throw', () => {
 });
 
 // ---------------------------------------------------------------------------
-// auditResponse — 'ultra' level fires no-confidence callout
+// auditResponse — 'on' level fires no-confidence callout
 // ---------------------------------------------------------------------------
 
-test('auditResponse: ultra level, long prose (>600 chars), no confidence tag -> fires callout', () => {
+test('auditResponse: on level, long prose (>600 chars), no confidence tag -> fires callout', () => {
   // 700+ chars of prose with no confidence language.
   const text = 'The architecture decision here is nuanced. ' +
     'We weigh database scalability, operational overhead, team expertise, and migration cost. ' +
     'Each factor influences the final recommendation in meaningful ways. '.repeat(8);
-  const { callouts } = auditResponse(text, 'ultra');
+  const { callouts } = auditResponse(text, 'on');
   assert.ok(callouts.some(c => /no confidence tag/.test(c)),
-    'ultra level should fire confidence callout on long no-confidence prose');
+    'on level should fire confidence callout on long no-confidence prose');
 });
 
 // ---------------------------------------------------------------------------
@@ -287,7 +287,7 @@ test('auditResponse: both preamble AND missing-confidence fire -> callouts.lengt
   // Start with preamble opener, then enough prose (>600 chars) with no confidence tag.
   const filler = 'This detailed walkthrough covers every tradeoff involved. '.repeat(12);
   const text = 'Sure! ' + filler;
-  const { callouts } = auditResponse(text, 'full');
+  const { callouts } = auditResponse(text, 'on');
   // Both checks should fire.
   assert.ok(callouts.some(c => /lead with the verdict/.test(c)), 'preamble callout expected');
   assert.ok(callouts.some(c => /no confidence tag/.test(c)), 'confidence callout expected');

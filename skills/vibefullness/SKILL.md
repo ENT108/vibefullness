@@ -1,7 +1,7 @@
 ---
 name: vibefullness
 description: Use when intense, long-running agent sessions cause reader fatigue — responses are too dense to read, bury the verdict, or are expensive to verify. Reduces operator cognitive load by shaping output to be cheap to read and cheap to trust.
-argument-hint: [lite | full | ultra | off]
+argument-hint: [on | off]
 ---
 
 # Vibefullness Mode
@@ -33,19 +33,17 @@ The reader is a senior engineer. Scaffolding that helps a novice **harms** an ex
 - **Code adjacency:** explanation next to the code, lines/functions referenced inline; no orphan blocks. Prose carries rationale + risk, never narration of what the code obviously does.
 - **Defect test:** any sentence stating something a senior already knows is a defect, not padding.
 
-## Intensity levels
+## Intensity
 
-| level | what to apply |
+| mode | what to apply |
 |---|---|
-| **lite** | Verdict first + kill all filler/preamble. Nothing else changes. |
-| **full** | lite + route-the-scrutiny verifiability + one-decision-with-recommendation + expertise-reversal stripping + scan structure (bold lead-ins, short chunks, restrained cueing). |
-| **ultra** | full + aggressive minimalism: telegraphic, only load-bearing tokens, recommendation-only. **Hard guard: never drop a load-bearing caveat or a what-to-verify pointer to be short.** Density, not word-count. |
+| **on** | Everything above + aggressive minimalism: telegraphic, only load-bearing tokens, recommendation-only. **Hard guard: never drop a load-bearing caveat or a what-to-verify pointer to be short.** Density, not word-count. |
 
-## Examples
+`on` is the single active mode — maximum cognitive saving. `off` disables the discipline entirely.
 
-- lite: "Postgres or Mongo for analytics SaaS?" → "**Postgres.** Analytics = joins + aggregations, which SQL owns; JSONB covers Mongo's flexible-schema niche." Then bullets if needed.
-- full: Same → verdict line 1 + **confidence**, 3 load-bearing bullets, a "pick Mongo only if…" exception, one-line recommendation. No 5-section essay.
-- ultra: Same → "**Postgres. High confidence.** SQL owns aggregations; JSONB covers Mongo's niche; add ClickHouse later if scale demands. Mongo only if data is read-by-id blobs."
+## Example
+
+- on: "Postgres or Mongo for analytics SaaS?" → "**Postgres. High confidence.** SQL owns aggregations; JSONB covers Mongo's niche; add ClickHouse later if scale demands. Mongo only if data is read-by-id blobs."
 
 ## Quick reference
 
@@ -77,7 +75,7 @@ Distinct jobs. **Caveman** = word choice (drop articles/filler/pleasantries). **
 
 ## Toggle
 
-`/vibefullness lite|full|ultra|off` (`/vibe` alias). Default: `VIBEFULLNESS_DEFAULT_MODE` env → `~/.config/vibefullness/config.json` → `full`. Persists until changed or session end. Natural language ("stop vibefullness", "normal mode") also off.
+`/vibefullness on|off` (`/vibe` alias). Default: `VIBEFULLNESS_DEFAULT_MODE` env → `~/.config/vibefullness/config.json` → `on`. Legacy `lite`/`full`/`ultra` are accepted and map to `on`. Persists until changed or session end. Natural language ("stop vibefullness", "normal mode") also off.
 
 ## Evidence
 

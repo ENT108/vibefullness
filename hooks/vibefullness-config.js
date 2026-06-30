@@ -11,13 +11,25 @@
 //      - $XDG_CONFIG_HOME/vibefullness/config.json (if XDG set)
 //      - ~/.config/vibefullness/config.json (macOS / Linux)
 //      - %APPDATA%\vibefullness\config.json (Windows)
-//   3. 'full'
+//   3. 'on'
 
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const VALID_MODES = ['off', 'lite', 'full', 'ultra'];
+// Two modes only: 'on' (maximum cognitive-saving discipline) and 'off'.
+// Legacy level names (lite/full/ultra) normalize to 'on' so old configs and
+// stale flag files keep working after the collapse to on|off.
+const VALID_MODES = ['off', 'on'];
+const LEGACY_ALIASES = { lite: 'on', full: 'on', ultra: 'on' };
+
+function normalizeMode(raw) {
+  if (typeof raw !== 'string') return null;
+  const m = raw.trim().toLowerCase();
+  if (VALID_MODES.includes(m)) return m;
+  if (LEGACY_ALIASES[m]) return LEGACY_ALIASES[m];
+  return null;
+}
 
 function getConfigDir() {
   if (process.env.XDG_CONFIG_HOME) {
@@ -37,19 +49,16 @@ function getConfigPath() {
 }
 
 function getDefaultMode() {
-  const envMode = process.env.VIBEFULLNESS_DEFAULT_MODE;
-  if (envMode && VALID_MODES.includes(envMode.toLowerCase())) {
-    return envMode.toLowerCase();
-  }
+  const envMode = normalizeMode(process.env.VIBEFULLNESS_DEFAULT_MODE);
+  if (envMode) return envMode;
   try {
     const config = JSON.parse(fs.readFileSync(getConfigPath(), 'utf8'));
-    if (config.defaultMode && VALID_MODES.includes(config.defaultMode.toLowerCase())) {
-      return config.defaultMode.toLowerCase();
-    }
+    const cfgMode = normalizeMode(config.defaultMode);
+    if (cfgMode) return cfgMode;
   } catch (e) {
     // missing/invalid config — fall through
   }
-  return 'full';
+  return 'on';
 }
 
 // Symlink-safe, atomic flag write with 0600 perms. Refuses symlinks at the
@@ -91,8 +100,8 @@ function safeWriteFlag(flagPath, content) {
 
 // Symlink-safe, size-capped, whitelist-validated read. Returns null on any
 // anomaly so a swapped symlink (e.g. -> ~/.ssh/id_rsa) is never slurped into
-// terminal output or model context. Longest valid value is "ultra" (5 bytes);
-// 64 leaves slack without enabling exfiltration.
+// terminal output or model context. Longest accepted value is a legacy alias
+// like "ultra" (5 bytes); 64 leaves slack without enabling exfiltration.
 const MAX_FLAG_BYTES = 64;
 
 function readFlag(flagPath) {
@@ -119,12 +128,10 @@ function readFlag(flagPath) {
       if (fd !== undefined) fs.closeSync(fd);
     }
 
-    const raw = out.trim().toLowerCase();
-    if (!VALID_MODES.includes(raw)) return null;
-    return raw;
+    return normalizeMode(out);
   } catch (e) {
     return null;
   }
 }
 
-module.exports = { getDefaultMode, getConfigDir, getConfigPath, VALID_MODES, safeWriteFlag, readFlag };
+module.exports = { getDefaultMode, getConfigDir, getConfigPath, VALID_MODES, normalizeMode, safeWriteFlag, readFlag };

@@ -77,7 +77,7 @@ if (skillContent) {
     'When the user must choose, give a recommendation — not an option-dump. ' +
     'Bold lead-ins, short chunks, no over-formatting.\n\n' +
     'Persist every response. Code/commits/security: write normally (clarity over brevity). ' +
-    'Switch: /vibefullness lite|full|ultra|off.';
+    'Switch: /vibefullness on|off.';
 }
 
 process.stdout.write(output);

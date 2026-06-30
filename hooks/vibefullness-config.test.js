@@ -13,6 +13,7 @@ const {
   getConfigDir,
   getConfigPath,
   VALID_MODES,
+  normalizeMode,
   safeWriteFlag,
   readFlag,
 } = require('./vibefullness-config');
@@ -58,8 +59,31 @@ function withEnv(overrides, fn) {
 // VALID_MODES
 // ---------------------------------------------------------------------------
 
-test('VALID_MODES contains exactly the four expected values', () => {
-  assert.deepStrictEqual([...VALID_MODES].sort(), ['full', 'lite', 'off', 'ultra'].sort());
+test('VALID_MODES contains exactly on and off', () => {
+  assert.deepStrictEqual([...VALID_MODES].sort(), ['off', 'on'].sort());
+});
+
+// ---------------------------------------------------------------------------
+// normalizeMode — on|off + legacy aliases
+// ---------------------------------------------------------------------------
+
+test('normalizeMode passes through on/off (case-insensitive, trimmed)', () => {
+  assert.strictEqual(normalizeMode('on'), 'on');
+  assert.strictEqual(normalizeMode('  OFF \n'), 'off');
+  assert.strictEqual(normalizeMode('On'), 'on');
+});
+
+test('normalizeMode maps legacy lite/full/ultra -> on', () => {
+  assert.strictEqual(normalizeMode('lite'), 'on');
+  assert.strictEqual(normalizeMode('full'), 'on');
+  assert.strictEqual(normalizeMode('ULTRA'), 'on');
+});
+
+test('normalizeMode returns null for unknown / non-string', () => {
+  assert.strictEqual(normalizeMode('turbo'), null);
+  assert.strictEqual(normalizeMode(''), null);
+  assert.strictEqual(normalizeMode(undefined), null);
+  assert.strictEqual(normalizeMode(42), null);
 });
 
 // ---------------------------------------------------------------------------
@@ -98,34 +122,34 @@ test('getConfigPath ends with config.json under XDG dir', () => {
 // getDefaultMode — env var branch
 // ---------------------------------------------------------------------------
 
-test('VIBEFULLNESS_DEFAULT_MODE env overrides everything (lowercase)', () => {
+test('VIBEFULLNESS_DEFAULT_MODE env overrides everything (off)', () => {
   const tmp = makeTmpDir();
   try {
-    withEnv({ VIBEFULLNESS_DEFAULT_MODE: 'lite', XDG_CONFIG_HOME: tmp }, () => {
+    withEnv({ VIBEFULLNESS_DEFAULT_MODE: 'off', XDG_CONFIG_HOME: tmp }, () => {
       // No config.json written — env alone is enough
-      assert.strictEqual(getDefaultMode(), 'lite');
+      assert.strictEqual(getDefaultMode(), 'off');
     });
   } finally {
     rmTmpDir(tmp);
   }
 });
 
-test('VIBEFULLNESS_DEFAULT_MODE is case-insensitive (FULL -> full)', () => {
+test('VIBEFULLNESS_DEFAULT_MODE is case-insensitive (ON -> on)', () => {
   const tmp = makeTmpDir();
   try {
-    withEnv({ VIBEFULLNESS_DEFAULT_MODE: 'FULL', XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'full');
+    withEnv({ VIBEFULLNESS_DEFAULT_MODE: 'ON', XDG_CONFIG_HOME: tmp }, () => {
+      assert.strictEqual(getDefaultMode(), 'on');
     });
   } finally {
     rmTmpDir(tmp);
   }
 });
 
-test('VIBEFULLNESS_DEFAULT_MODE with mixed case (uLtRa -> ultra)', () => {
+test('legacy VIBEFULLNESS_DEFAULT_MODE (uLtRa) maps to on', () => {
   const tmp = makeTmpDir();
   try {
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: 'uLtRa', XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'ultra');
+      assert.strictEqual(getDefaultMode(), 'on');
     });
   } finally {
     rmTmpDir(tmp);
@@ -138,21 +162,21 @@ test('invalid VIBEFULLNESS_DEFAULT_MODE is ignored; falls through to config', ()
     // Write a valid config so we can confirm fall-through, not just default
     const cfgDir = path.join(tmp, 'vibefullness');
     fs.mkdirSync(cfgDir, { recursive: true });
-    fs.writeFileSync(path.join(cfgDir, 'config.json'), JSON.stringify({ defaultMode: 'lite' }));
+    fs.writeFileSync(path.join(cfgDir, 'config.json'), JSON.stringify({ defaultMode: 'off' }));
 
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: 'bogus', XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'lite');
+      assert.strictEqual(getDefaultMode(), 'off');
     });
   } finally {
     rmTmpDir(tmp);
   }
 });
 
-test('empty string VIBEFULLNESS_DEFAULT_MODE is ignored', () => {
+test('empty string VIBEFULLNESS_DEFAULT_MODE is ignored (default on)', () => {
   const tmp = makeTmpDir();
   try {
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: '', XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'full');
+      assert.strictEqual(getDefaultMode(), 'on');
     });
   } finally {
     rmTmpDir(tmp);
@@ -163,22 +187,22 @@ test('empty string VIBEFULLNESS_DEFAULT_MODE is ignored', () => {
 // getDefaultMode — config.json branch
 // ---------------------------------------------------------------------------
 
-test('config.json defaultMode is used when env is unset', () => {
+test('config.json defaultMode is used when env is unset (off)', () => {
   const tmp = makeTmpDir();
   try {
     const cfgDir = path.join(tmp, 'vibefullness');
     fs.mkdirSync(cfgDir, { recursive: true });
-    fs.writeFileSync(path.join(cfgDir, 'config.json'), JSON.stringify({ defaultMode: 'lite' }));
+    fs.writeFileSync(path.join(cfgDir, 'config.json'), JSON.stringify({ defaultMode: 'off' }));
 
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: undefined, XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'lite');
+      assert.strictEqual(getDefaultMode(), 'off');
     });
   } finally {
     rmTmpDir(tmp);
   }
 });
 
-test('config.json defaultMode is case-insensitive (ULTRA -> ultra)', () => {
+test('legacy config.json defaultMode (ULTRA) maps to on', () => {
   const tmp = makeTmpDir();
   try {
     const cfgDir = path.join(tmp, 'vibefullness');
@@ -186,26 +210,26 @@ test('config.json defaultMode is case-insensitive (ULTRA -> ultra)', () => {
     fs.writeFileSync(path.join(cfgDir, 'config.json'), JSON.stringify({ defaultMode: 'ULTRA' }));
 
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: undefined, XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'ultra');
+      assert.strictEqual(getDefaultMode(), 'on');
     });
   } finally {
     rmTmpDir(tmp);
   }
 });
 
-test('missing config.json falls back to full', () => {
+test('missing config.json falls back to on', () => {
   const tmp = makeTmpDir();
   try {
     // XDG set but no config.json inside
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: undefined, XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'full');
+      assert.strictEqual(getDefaultMode(), 'on');
     });
   } finally {
     rmTmpDir(tmp);
   }
 });
 
-test('malformed JSON in config.json falls back to full', () => {
+test('malformed JSON in config.json falls back to on', () => {
   const tmp = makeTmpDir();
   try {
     const cfgDir = path.join(tmp, 'vibefullness');
@@ -213,14 +237,14 @@ test('malformed JSON in config.json falls back to full', () => {
     fs.writeFileSync(path.join(cfgDir, 'config.json'), '{ not json !!');
 
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: undefined, XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'full');
+      assert.strictEqual(getDefaultMode(), 'on');
     });
   } finally {
     rmTmpDir(tmp);
   }
 });
 
-test('invalid defaultMode value in config.json falls back to full', () => {
+test('invalid defaultMode value in config.json falls back to on', () => {
   const tmp = makeTmpDir();
   try {
     const cfgDir = path.join(tmp, 'vibefullness');
@@ -228,14 +252,14 @@ test('invalid defaultMode value in config.json falls back to full', () => {
     fs.writeFileSync(path.join(cfgDir, 'config.json'), JSON.stringify({ defaultMode: 'turbo' }));
 
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: undefined, XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'full');
+      assert.strictEqual(getDefaultMode(), 'on');
     });
   } finally {
     rmTmpDir(tmp);
   }
 });
 
-test('config.json with no defaultMode field falls back to full', () => {
+test('config.json with no defaultMode field falls back to on', () => {
   const tmp = makeTmpDir();
   try {
     const cfgDir = path.join(tmp, 'vibefullness');
@@ -243,7 +267,7 @@ test('config.json with no defaultMode field falls back to full', () => {
     fs.writeFileSync(path.join(cfgDir, 'config.json'), JSON.stringify({ someOtherKey: 'lite' }));
 
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: undefined, XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'full');
+      assert.strictEqual(getDefaultMode(), 'on');
     });
   } finally {
     rmTmpDir(tmp);
@@ -258,19 +282,19 @@ test('readFlag returns valid mode from a normal file', () => {
   const tmp = makeTmpDir();
   try {
     const p = path.join(tmp, '.vibefullness-active');
-    fs.writeFileSync(p, 'lite');
-    assert.strictEqual(readFlag(p), 'lite');
+    fs.writeFileSync(p, 'on');
+    assert.strictEqual(readFlag(p), 'on');
   } finally {
     rmTmpDir(tmp);
   }
 });
 
-test('readFlag trims whitespace and lowercases', () => {
+test('readFlag trims whitespace, lowercases, and maps legacy ULTRA -> on', () => {
   const tmp = makeTmpDir();
   try {
     const p = path.join(tmp, '.vibefullness-active');
     fs.writeFileSync(p, '  ULTRA\n');
-    assert.strictEqual(readFlag(p), 'ultra');
+    assert.strictEqual(readFlag(p), 'on');
   } finally {
     rmTmpDir(tmp);
   }
@@ -349,8 +373,8 @@ test('safeWriteFlag writes content readable via readFlag round-trip', () => {
   const tmp = makeTmpDir();
   try {
     const p = path.join(tmp, '.vibefullness-active');
-    safeWriteFlag(p, 'full');
-    assert.strictEqual(readFlag(p), 'full');
+    safeWriteFlag(p, 'on');
+    assert.strictEqual(readFlag(p), 'on');
   } finally {
     rmTmpDir(tmp);
   }
@@ -390,8 +414,8 @@ test('safeWriteFlag creates parent directory when missing', () => {
   try {
     const nested = path.join(tmp, 'nested', 'dir');
     const p = path.join(nested, '.vibefullness-active');
-    safeWriteFlag(p, 'ultra');
-    assert.strictEqual(readFlag(p), 'ultra');
+    safeWriteFlag(p, 'on');
+    assert.strictEqual(readFlag(p), 'on');
   } finally {
     rmTmpDir(tmp);
   }
@@ -454,8 +478,8 @@ test('safeWriteFlag overwrites a previously written flag on second call', () => 
   try {
     const p = path.join(tmp, '.vibefullness-active');
     safeWriteFlag(p, 'off');
-    safeWriteFlag(p, 'ultra');
-    assert.strictEqual(readFlag(p), 'ultra');
+    safeWriteFlag(p, 'on');
+    assert.strictEqual(readFlag(p), 'on');
   } finally {
     rmTmpDir(tmp);
   }
