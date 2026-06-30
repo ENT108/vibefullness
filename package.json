@@ -1,0 +1,15 @@
+{
+  "name": "vibefullness",
+  "version": "0.1.0",
+  "description": "Always-on output discipline for AI agents: every response cheap to read and cheap to verify.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ENT108/vibefullness.git"
+  },
+  "keywords": ["communication", "cognitive-load", "style", "skill", "hooks"],
+  "files": ["hooks/", "skills/", ".claude-plugin/", "install.sh", "statusline-segment.sh", "LICENSE"],
+  "scripts": {
+    "test": "node --test hooks/*.test.js"
+  }
+}
