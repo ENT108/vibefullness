@@ -62,6 +62,18 @@ test('bluf: explicit "X over Y" preference passes despite naming both', () => {
   assert.equal(r.score, 1);
 });
 
+test('bluf: "prefer X to Y" preference passes despite naming both', () => {
+  const r = check('bluf', 'I prefer Postgres to Mongo for this backend.', PG_EXPECT);
+  assert.equal(r.pass, true);
+  assert.equal(r.score, 1);
+});
+
+test('bluf: underscore/italic ornaments fully stripped (leading and trailing)', () => {
+  const r = check('bluf', '_Postgres_. High confidence.', PG_EXPECT);
+  assert.equal(r.pass, true);
+  assert.equal(r.score, 1);
+});
+
 // --- verify: confidence tag AND what-to-verify pointer ---
 
 test('verify: tag + pointer passes', () => {

@@ -27,7 +27,9 @@ function firstLine(text) {
       prev = line;
       line = line.replace(/^(?:[#>*+\-]+|\d+[.)]|[_~]+)\s*/, '').trim();
     } while (line !== prev);
-    line = line.replace(/\*+/g, '').trim(); // drop remaining inline bold/italic stars
+    // Drop remaining inline emphasis: stars anywhere, and underscore runs that
+    // wrap a word (leading/trailing) — but keep internal _ (snake_case, db names).
+    line = line.replace(/\*+/g, '').replace(/_+(?!\w)|(?<!\w)_+/g, '').trim();
     if (line) return line;
   }
   return '';
@@ -35,9 +37,9 @@ function firstLine(text) {
 
 const HEDGE_OPENER = /^(it depends|that depends|this depends|the (best )?(choice|answer|decision) depends|there are |there's |there is |both |neither |well[,\s]|hmm|in short, it depends)/i;
 const VERDICT_TOKEN = /\b(recommend|use\s|go with|pick\b|choose\b|i'?d (use|pick|go|choose)|default to|the winner|stick with)\b/i;
-// "X over Y" / "X instead of Y" is a decisive comparison verdict, not an
+// "X over Y" / "prefer X to Y" is a decisive comparison verdict, not an
 // option-menu — naming both options is fine when a preference is stated.
-const COMPARISON = /\b(over|instead of|rather than|better than|preferred (to|over))\b/i;
+const COMPARISON = /\b(over|instead of|rather than|better than|prefer(s|red|ence)?|favor(s|ed)?)\b/i;
 const CONFIDENCE_TAG = /\b(high|moderate|low)\s+confidence\b|\bconfidence[:\s-]+(high|moderate|low)\b/i;
 const VERIFY_POINTER = /\b(verify|check|confirm|double[- ]check|validate|test (that|whether|it)|make sure|sanity[- ]check)\b/i;
 const DANGER_CAVEAT = /\b(data loss|irreversible|cannot be undone|can'?t be undone|permanent(ly)?|destroy|wipe[sd]?|delete[sd]?|drop(s|ped)?|unrecoverable|no undo|overwrit|back ?up first|take a backup|rewrites? history|force[- ]push)\b/i;
