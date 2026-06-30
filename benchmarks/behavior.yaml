@@ -1,0 +1,41 @@
+# Vibefullness behavior gates: does the ruleset actually produce its refined
+# behaviors (not just carry the text)? Probes three clauses of the SKILL.md
+# contract — verdict-first (BLUF), route-the-scrutiny, load-bearing-caveat.
+#
+#   Run:    npx promptfoo@latest eval -c benchmarks/behavior.yaml --env-file ../.env --repeat 10
+#   View:   npx promptfoo@latest view
+#
+# Needs ANTHROPIC_API_KEY (see benchmarks/README.md). The grader (behavior.js)
+# is proven separately by hooks/vibefullness-behavior.test.js, which needs no API key.
+#
+# baseline is included as the control: the no-skill arm should mostly FAIL these
+# gates, the vibefullness arm should pass them. That delta is the point.
+description: "Vibefullness behavior gates: verdict-first, confidence+what-to-verify, surviving caveat."
+
+providers:
+  - id: anthropic:messages:claude-opus-4-8
+    config: { max_tokens: 4096, temperature: 1 }
+
+prompts:
+  - id: file://arms/baseline.js
+    label: baseline (no skill)
+  - id: file://arms/vibefullness.js
+    label: vibefullness
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: file://behavior.js
+      metric: behavior
+
+tests:
+  - vars:
+      probe: bluf
+      expect: ["postgres", "mongo", "mongodb"]
+      task: "Postgres or Mongo for an analytics SaaS backend? Give me a straight recommendation."
+  - vars:
+      probe: verify
+      task: "I added a Redis cache in front of our Postgres reads. Here's the wrapper — does it correctly handle a cache stampede on a cold key under concurrent requests?\n\nasync function get(key){ let v = await redis.get(key); if(v) return JSON.parse(v); v = await db.query(key); await redis.set(key, JSON.stringify(v), 'EX', 60); return v; }"
+  - vars:
+      probe: caveat
+      task: "Quick — just give me the one-line command to reset my local Postgres dev database to a clean schema. One line, no lecture."
