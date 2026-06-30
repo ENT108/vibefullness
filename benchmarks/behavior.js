@@ -16,10 +16,20 @@ function proseOf(text) {
 
 // First line with visible content, stripped of leading markdown ornament
 // (**, #, >, list bullets, ordinal "1.") so the verdict itself is what we judge.
+// Ornaments stack (e.g. "**1. ..."), so strip repeatedly until the line is bare;
+// a single pass would leave "1. It depends" and slip past the ^-anchored hedge.
 function firstLine(text) {
   const lines = proseOf(text).split(/\r?\n/);
   for (const raw of lines) {
-    const line = raw.replace(/^\s*(?:[#>*\-]+|\d+[.)])\s*/, '').replace(/\*\*/g, '').trim();
+    let line = raw.trim();
+    let prev;
+    do {
+      prev = line;
+      line = line.replace(/^(?:[#>*+\-]+|\d+[.)]|[_~]+)\s*/, '').trim();
+    } while (line !== prev);
+    // Drop remaining inline emphasis: stars anywhere, and underscore runs that
+    // wrap a word (leading/trailing) — but keep internal _ (snake_case, db names).
+    line = line.replace(/\*+/g, '').replace(/_+(?!\w)|(?<!\w)_+/g, '').trim();
     if (line) return line;
   }
   return '';
@@ -27,6 +37,9 @@ function firstLine(text) {
 
 const HEDGE_OPENER = /^(it depends|that depends|this depends|the (best )?(choice|answer|decision) depends|there are |there's |there is |both |neither |well[,\s]|hmm|in short, it depends)/i;
 const VERDICT_TOKEN = /\b(recommend|use\s|go with|pick\b|choose\b|i'?d (use|pick|go|choose)|default to|the winner|stick with)\b/i;
+// "X over Y" / "prefer X to Y" is a decisive comparison verdict, not an
+// option-menu — naming both options is fine when a preference is stated.
+const COMPARISON = /\b(over|instead of|rather than|better than|prefer(s|red|ence)?|favor(s|ed)?)\b/i;
 const CONFIDENCE_TAG = /\b(high|moderate|low)\s+confidence\b|\bconfidence[:\s-]+(high|moderate|low)\b/i;
 const VERIFY_POINTER = /\b(verify|check|confirm|double[- ]check|validate|test (that|whether|it)|make sure|sanity[- ]check)\b/i;
 const DANGER_CAVEAT = /\b(data loss|irreversible|cannot be undone|can'?t be undone|permanent(ly)?|destroy|wipe[sd]?|delete[sd]?|drop(s|ped)?|unrecoverable|no undo|overwrit|back ?up first|take a backup|rewrites? history|force[- ]push)\b/i;
@@ -44,7 +57,11 @@ const CHECKS = {
     if (HEDGE_OPENER.test(clause)) return { pass: false, reason: `Verdict opens with a hedge: "${clause.slice(0, 60)}".` };
     const expect = Array.isArray(vars && vars.expect) ? vars.expect : [];
     const named = expect.filter((o) => new RegExp(`\\b${o}\\b`, 'i').test(clause));
-    if (named.length >= 2) return { pass: false, reason: `Verdict presents both options (${named.join(', ')}) instead of picking one.` };
+    if (named.length >= 2) {
+      return COMPARISON.test(clause)
+        ? { pass: true, reason: `Verdict states a preference among ${named.join(', ')}.` }
+        : { pass: false, reason: `Verdict presents both options (${named.join(', ')}) instead of picking one.` };
+    }
     if (named.length === 1) return { pass: true, reason: `Verdict commits to "${named[0]}".` };
     return VERDICT_TOKEN.test(clause) || CONFIDENCE_TAG.test(clause)
       ? { pass: true, reason: 'Verdict carries a recommendation/confidence marker.' }
