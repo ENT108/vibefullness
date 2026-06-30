@@ -37,11 +37,11 @@ process.stdin.on('end', () => {
       }
     }
 
-    // /vibefullness [on|off]  (/vibe is a short alias; legacy level names map to on)
+    // /vibefullness [on|off]  (/vibe is a short alias)
     const cmd = prompt.split(/\s+/)[0];
     if (cmd === '/vibefullness' || cmd === '/vibe') {
       const arg = prompt.split(/\s+/)[1] || '';
-      // normalizeMode handles on|off + legacy lite|full|ultra→on; bare command → default
+      // normalizeMode handles on|off; unknown/bare command → default
       const mode = normalizeMode(arg) || getDefaultMode();
 
       if (mode !== 'off') safeWriteFlag(flagPath, mode);

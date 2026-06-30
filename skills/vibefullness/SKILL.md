@@ -75,7 +75,7 @@ Distinct jobs. **Caveman** = word choice (drop articles/filler/pleasantries). **
 
 ## Toggle
 
-`/vibefullness on|off` (`/vibe` alias). Default: `VIBEFULLNESS_DEFAULT_MODE` env → `~/.config/vibefullness/config.json` → `on`. Legacy `lite`/`full`/`ultra` are accepted and map to `on`. Persists until changed or session end. Natural language ("stop vibefullness", "normal mode") also off.
+`/vibefullness on|off` (`/vibe` alias). Default: `VIBEFULLNESS_DEFAULT_MODE` env → `~/.config/vibefullness/config.json` → `on`. Persists until changed or session end. Natural language ("stop vibefullness", "normal mode") also off.
 
 ## Evidence
 

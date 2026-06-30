@@ -246,21 +246,21 @@ test('lastAssistantProse: large prefix junk before TAIL_BYTES, assistant in tail
 
 test('auditResponse: null input -> { callouts: [] }, no throw', () => {
   assert.doesNotThrow(() => {
-    const result = auditResponse(null, 'full');
+    const result = auditResponse(null, 'on');
     assert.deepStrictEqual(result, { callouts: [] });
   });
 });
 
 test('auditResponse: number input -> { callouts: [] }, no throw', () => {
   assert.doesNotThrow(() => {
-    const result = auditResponse(42, 'full');
+    const result = auditResponse(42, 'on');
     assert.deepStrictEqual(result, { callouts: [] });
   });
 });
 
 test('auditResponse: undefined input -> { callouts: [] }, no throw', () => {
   assert.doesNotThrow(() => {
-    const result = auditResponse(undefined, 'full');
+    const result = auditResponse(undefined, 'on');
     assert.deepStrictEqual(result, { callouts: [] });
   });
 });

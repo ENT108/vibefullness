@@ -18,8 +18,6 @@ Cuts verification/review fatigue — the load of reading dense AI output and jud
 | `on` | Maximum cognitive saving: verdict first, routed verifiability, recommendation-only, expertise-stripping, telegraphic density. Hard guard: never drops a load-bearing caveat to be short. **Default.** |
 | `off` | Discipline disabled. |
 
-Legacy `lite`/`full`/`ultra` are still accepted and map to `on`.
-
 ## Install
 
 ```bash

@@ -73,10 +73,10 @@ test('normalizeMode passes through on/off (case-insensitive, trimmed)', () => {
   assert.strictEqual(normalizeMode('On'), 'on');
 });
 
-test('normalizeMode maps legacy lite/full/ultra -> on', () => {
-  assert.strictEqual(normalizeMode('lite'), 'on');
-  assert.strictEqual(normalizeMode('full'), 'on');
-  assert.strictEqual(normalizeMode('ULTRA'), 'on');
+test('normalizeMode returns null for dropped legacy names (lite/full/ultra)', () => {
+  assert.strictEqual(normalizeMode('lite'), null);
+  assert.strictEqual(normalizeMode('full'), null);
+  assert.strictEqual(normalizeMode('ULTRA'), null);
 });
 
 test('normalizeMode returns null for unknown / non-string', () => {
@@ -145,11 +145,15 @@ test('VIBEFULLNESS_DEFAULT_MODE is case-insensitive (ON -> on)', () => {
   }
 });
 
-test('legacy VIBEFULLNESS_DEFAULT_MODE (uLtRa) maps to on', () => {
+test('dropped legacy VIBEFULLNESS_DEFAULT_MODE (uLtRa) is ignored; falls through to config', () => {
   const tmp = makeTmpDir();
   try {
+    const cfgDir = path.join(tmp, 'vibefullness');
+    fs.mkdirSync(cfgDir, { recursive: true });
+    fs.writeFileSync(path.join(cfgDir, 'config.json'), JSON.stringify({ defaultMode: 'off' }));
+
     withEnv({ VIBEFULLNESS_DEFAULT_MODE: 'uLtRa', XDG_CONFIG_HOME: tmp }, () => {
-      assert.strictEqual(getDefaultMode(), 'on');
+      assert.strictEqual(getDefaultMode(), 'off');
     });
   } finally {
     rmTmpDir(tmp);
@@ -202,7 +206,7 @@ test('config.json defaultMode is used when env is unset (off)', () => {
   }
 });
 
-test('legacy config.json defaultMode (ULTRA) maps to on', () => {
+test('dropped legacy config.json defaultMode (ULTRA) is ignored; falls back to on', () => {
   const tmp = makeTmpDir();
   try {
     const cfgDir = path.join(tmp, 'vibefullness');
@@ -289,12 +293,23 @@ test('readFlag returns valid mode from a normal file', () => {
   }
 });
 
-test('readFlag trims whitespace, lowercases, and maps legacy ULTRA -> on', () => {
+test('readFlag trims whitespace and lowercases (  ON\\n -> on)', () => {
+  const tmp = makeTmpDir();
+  try {
+    const p = path.join(tmp, '.vibefullness-active');
+    fs.writeFileSync(p, '  ON\n');
+    assert.strictEqual(readFlag(p), 'on');
+  } finally {
+    rmTmpDir(tmp);
+  }
+});
+
+test('readFlag returns null for a dropped legacy value (ULTRA)', () => {
   const tmp = makeTmpDir();
   try {
     const p = path.join(tmp, '.vibefullness-active');
     fs.writeFileSync(p, '  ULTRA\n');
-    assert.strictEqual(readFlag(p), 'on');
+    assert.strictEqual(readFlag(p), null);
   } finally {
     rmTmpDir(tmp);
   }
@@ -338,7 +353,7 @@ test('readFlag returns null for symlink at flagPath (refuses to follow)', () => 
   try {
     const real = path.join(tmp, 'real-flag');
     const link = path.join(tmp, '.vibefullness-active');
-    fs.writeFileSync(real, 'full');
+    fs.writeFileSync(real, 'on');
     try {
       fs.symlinkSync(real, link);
     } catch (e) {
@@ -388,7 +403,7 @@ test('safeWriteFlag sets file mode 0600 (POSIX only)', () => {
   const tmp = makeTmpDir();
   try {
     const p = path.join(tmp, '.vibefullness-active');
-    safeWriteFlag(p, 'lite');
+    safeWriteFlag(p, 'on');
     const mode = fs.statSync(p).mode & 0o777;
     assert.strictEqual(mode, 0o600, `expected 0600, got 0${mode.toString(8)}`);
   } finally {
@@ -437,7 +452,7 @@ test('safeWriteFlag refuses to write when parent dir is a symlink', () => {
       throw e;
     }
     const flagPath = path.join(link, '.vibefullness-active');
-    safeWriteFlag(flagPath, 'full');
+    safeWriteFlag(flagPath, 'on');
     // Target must NOT have been written
     assert.ok(!fs.existsSync(flagPath), 'flag file must not be created when parent is a symlink');
   } finally {
@@ -461,7 +476,7 @@ test('safeWriteFlag refuses to clobber an existing symlink at flagPath', () => {
       }
       throw e;
     }
-    safeWriteFlag(link, 'full');
+    safeWriteFlag(link, 'on');
     // The victim must be unchanged
     assert.strictEqual(
       fs.readFileSync(victim, 'utf8'),

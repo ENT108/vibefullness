@@ -18,17 +18,14 @@ const path = require('path');
 const os = require('os');
 
 // Two modes only: 'on' (maximum cognitive-saving discipline) and 'off'.
-// Legacy level names (lite/full/ultra) normalize to 'on' so old configs and
-// stale flag files keep working after the collapse to on|off.
+// Anything else (including the dropped legacy lite/full/ultra names) is invalid
+// and resolves to null, so callers fall through to their default.
 const VALID_MODES = ['off', 'on'];
-const LEGACY_ALIASES = { lite: 'on', full: 'on', ultra: 'on' };
 
 function normalizeMode(raw) {
   if (typeof raw !== 'string') return null;
   const m = raw.trim().toLowerCase();
-  if (VALID_MODES.includes(m)) return m;
-  if (LEGACY_ALIASES[m]) return LEGACY_ALIASES[m];
-  return null;
+  return VALID_MODES.includes(m) ? m : null;
 }
 
 function getConfigDir() {
@@ -100,8 +97,8 @@ function safeWriteFlag(flagPath, content) {
 
 // Symlink-safe, size-capped, whitelist-validated read. Returns null on any
 // anomaly so a swapped symlink (e.g. -> ~/.ssh/id_rsa) is never slurped into
-// terminal output or model context. Longest accepted value is a legacy alias
-// like "ultra" (5 bytes); 64 leaves slack without enabling exfiltration.
+// terminal output or model context. Longest accepted value is "off"/"on"
+// (3 bytes); 64 leaves slack without enabling exfiltration.
 const MAX_FLAG_BYTES = 64;
 
 function readFlag(flagPath) {

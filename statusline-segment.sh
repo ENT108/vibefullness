@@ -20,8 +20,8 @@ FLAG="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.vibefullness-active"
 # Cap at 64 bytes, lowercase, strip to [a-z] — blocks escape/OSC injection.
 MODE=$(head -c 64 "$FLAG" 2>/dev/null | tr -d '\n\r' | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z')
 
-# Single active mode 'on' (and legacy lite/full/ultra) all render [VIBE].
+# Active mode 'on' (or empty/missing flag → default on) renders [VIBE]; 'off' renders nothing.
 case "$MODE" in
-  on|full|lite|ultra|"") printf '\033[38;5;111m[VIBE]\033[0m' ;;
+  on|"") printf '\033[38;5;111m[VIBE]\033[0m' ;;
   *) exit 0 ;;
 esac
